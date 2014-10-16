@@ -281,7 +281,68 @@ class EntryDataAccessor {
     return $fatherGottenByVerbatim;
   }
 
-private function getEntry($selectResult) {
+  public function getKidsByVerbatim($verbatim) {
+    $query = 'SELECT ent_entry_id, ent_entry_text, relevance FROM
+          (SELECT ent_entry_id, ent_entry_text, relevance FROM(
+
+            # Russian
+            (SELECT ent_entry_id, ent_entry_text,
+              MATCH(ent_entry_verbatim)
+              AGAINST("' . $verbatim . '" IN NATURAL LANGUAGE MODE)
+              AS relevance
+              FROM tbl_entry_russian
+              WHERE
+              MATCH(ent_entry_verbatim)
+              AGAINST("' . $verbatim . '" IN NATURAL LANGUAGE MODE)
+              AND ent_entry_authen_status_id = 2
+              HAVING Relevance > 0
+              ORDER BY relevance DESC
+            ) # Russian
+
+            UNION ALL
+
+            # English
+            (SELECT ent_entry_id, ent_entry_text,
+              MATCH(ent_entry_verbatim)
+              AGAINST("' . $verbatim . '" IN NATURAL LANGUAGE MODE)
+              AS relevance
+              FROM  tbl_entry_english
+              WHERE
+              MATCH(ent_entry_verbatim)
+              AGAINST("' . $verbatim . '" IN NATURAL LANGUAGE MODE)
+              AND ent_entry_authen_status_id = 2
+              HAVING Relevance > 0
+              ORDER BY relevance DESC
+            )# English
+
+            UNION ALL
+
+            # Mandarin
+            (SELECT ent_entry_id, ent_entry_text,
+              MATCH(ent_entry_verbatim)
+              AGAINST("' . $verbatim . '" IN NATURAL LANGUAGE MODE)
+              AS relevance
+              FROM  tbl_entry_mandarin
+              WHERE
+              MATCH(ent_entry_verbatim)
+              AGAINST("' . $verbatim . '" IN NATURAL LANGUAGE MODE)
+              AND ent_entry_authen_status_id = 2
+              HAVING Relevance > 0
+              ORDER BY relevance DESC
+            ) # Mandarin
+
+          ) AS UnionTable
+          GROUP BY ent_entry_id ASC
+        ) AS TableToOrderById';
+
+    $dbHelper = new DBHelper();
+    $selectResult = $dbHelper->executeSelect($query);
+    // the current EntryDataAccessor object = $this
+    $fatherGottenByVerbatim = $this->getEntry($selectResult);
+    return $fatherGottenByVerbatim;
+  }
+
+  private function getEntry($selectResult) {
     // To be moved to bottom later
     // private: to be accessed by member functions only
     // $selectResult is the result from executing a SELECT query

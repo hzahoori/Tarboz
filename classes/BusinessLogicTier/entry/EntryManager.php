@@ -73,5 +73,16 @@ class EntryManager {
     $fatherGottenByVerbatim = $eda->getFatherByVerbatim($verbatim);
     return $fatherGottenByVerbatim;
   }
+  /**
+   * getKidsByVerbatim($verbatim)
+   * To retrieve one array of multiple 'kid' entries by verbatim
+   * @param type $verbatim
+   * @return one array of 'kid' entries gotten by verbatim
+   */
+  public function getKidsByVerbatim($verbatim) {
+    $eda = new EntryDataAccessor();
+    $kidsGottenByVerbatim = $eda->getKidsByVerbatim($verbatim);
+    return $kidsGottenByVerbatim;
+  }
 
 }

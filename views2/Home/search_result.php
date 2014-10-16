@@ -11,6 +11,8 @@ $verbatim = 'plum under';
 $em = new EntryManager();
 // #) get the Father entry
 $dad = $em->getFatherByVerbatim($verbatim);
+// #) get kids by verbatim
+$kids = $em->getKidsByVerbatim($verbatim);
 // #) find the children of house 1 (i.e. equivalent entries in language 1)
 // #) save all the children entries in an array
 // #) find the children of house 2 (i.e. equivalent entries in language 2)
