@@ -33,7 +33,15 @@
     $entry = $em->getEntryById($entryId); // 1
     $treq = $trm->getTreqByEntryId($entry->getEntryId());
     $lm = new LanguageManager();
-    $userId = 3; // the id of the current logged-in user
+    //$userId = 3; // the id of the current logged-in user
+    $loggedIn_userId = "";
+    $loggedIn_userType = "";
+    if (isset($_SESSION['user'])) {
+        $user = $_SESSION['user'];
+        $loggedIn_userId = $user->getUserId();
+        $loggedIn_userType = $user->getUserType();
+          //echo "logged in user id==".$loggedIn_userId;
+    }
     
     $language = $entry->getEntryLanguage();
     $text = nl2br(trim($entry->getEntryText()));
@@ -123,12 +131,14 @@
     <div class="entry_record">
       <div class="entry_record_title">Entry added by</div>
       <div class="entry_record_value">
-    <?php 
-        //echo $user_id."</br>"; 
-        $userManager = new UserManager();
-        $user = $userManager->getUserByUserId($user_id);
-        echo $user->getFirstName()." ".$user->getLastName();
-    ?>
+          <a href="other_user.php?id=<?php echo $user_id;?>">
+            <?php 
+                //echo $user_id."</br>"; 
+                $userManager = new UserManager();
+                $user = $userManager->getUserByUserId($user_id);
+                echo $user->getFirstName()." ".$user->getLastName();
+            ?>
+          </a>
       </div>
     </div>
     <!--Display user name who added this entry end-->
@@ -230,16 +240,19 @@
       <div class="entry_record_value"><?php echo $date; ?></div>
     </div>
     <!--Display creation date end --> 
-    <!--Display edit--> 
+    <!--Display edit-->  
+    <?php if ($loggedIn_userId == $user_id || $loggedIn_userType == "1") { ?>
     <div class="entry_record">
       <div class="entry_record_title">Edit</div>
       <div class="entry_record_value">
         <a href="entrycreate.php?id=<?php echo $entryId; ?>">Edit the entry</a><!-- #1-->
       </div>      
     </div>
+    <?php } ?>
     <!--Display edit end--> 
-    <!--Display Translate into--> 
-    <!-- display the Delete button if the logged-in user is the creator of the entry-->
+
+    <!-- display the Delete entry-->
+    <?php if ($loggedIn_userId == $user_id || $loggedIn_userType == "1") { ?>
     <div class="entry_record">
       <div class="entry_record_title">Delete this entry</div>
       <div class="entry_record_value">
@@ -271,8 +284,9 @@
         });
       </script>  
     </div>
-        
-    
+    <?php } ?>
+     <!-- end display the Delete entry-->   
+        <!--Display Translate into--> 
     <?php
         if($entry->getEntryAuthenStatusId() == 1){
         // 1*
@@ -304,18 +318,19 @@
           onchange="treqCreate(this.value,<?php echo $userId.",".$entryId; ?>)">
           <option value="">Select a language:</option>
           <?php
-          $langs = $lm->getListOfLang();
+          $langs = $lm->getLanguages();
           foreach ($langs as $lang) {
             echo '<option value="';
             echo $lang->getLangId();
             echo '">';
             echo $lang->getLangName();
             echo '</option>';
-          }
-                                         }?></select>
+          } ?>
+          </select>
         <span id="treqCreateResponse"></span>
       </div>
     </div>
+    <?php } //end if($entry->getEntryAuthenStatusId() == 1)?>
     <!--Display translation request end-->
     <!--- comments section start --->
   
@@ -379,7 +394,7 @@
 
       <div> <!--div2-->
         <div style="display:table;">
-          <div style="display:table-row;"><?php echo $created_user_name.":"; ?> </div>
+          <div style="display:table-row;"><a href="other_user.php?id=<?php echo $created_by;?>"><?php echo $created_user_name.":"; ?></a> </div>
           <div style="display:table-row;">
             <div style="display:table-cell; width:280px; padding-left:10px;">
                 <span id="<?php echo $edit_comment_text_id; ?>" style="display:'';"><?php echo $text; ?></span>  
@@ -451,10 +466,10 @@
         ?> 
         <!--add a new comment form-->
         <form name="new_comment" id="new_comment" >
-          <textarea rows="3" cols="45" name="newComment" id="newComment"></textarea><br/>
+          <textarea rows="3" cols="45" name="newComment" id="newComment" ></textarea><br/>
           <input type="hidden" id = "commentEntityId" name = "commentEntityId" value ="<?php echo $entryId;?>"/>
           <input type="hidden" id = "user_login_status" name = "user_login_status" value ="<?php echo $user_logged_status;?>"/>
-          <button id="new_commentSub" name="new_commentSub" type="button">Comment</button>
+          <button id="new_commentSub" name="new_commentSub" type="button" <?php if ($user_logged_in == false) echo " disabled"; ?> style="margin-top:5px;">Comment</button>
         </form>  
      </div> <!--entry_record_value-->
    </div> <!--entry_record_value-->
